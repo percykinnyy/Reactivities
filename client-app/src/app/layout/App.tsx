@@ -1,37 +1,26 @@
-import { useState } from 'react'
 import { useEffect } from "react";
 import { Container } from 'semantic-ui-react';
-import { Activity } from '../models/activity';
 import NavBar from './NavBar';
 import ActivityDashboard from '../../features/activities/dashboard/ActivityDashboard';
-import {v4 as uuid} from 'uuid';
-import agent from '../api/agent';
 import LoadingComponent from './loadingcomponent';
+import { useStore } from '../stores/store';
+import { observer } from 'mobx-react-lite';
+
 
 
 function App() {
-  const [activities,setActivities] = useState<Activity[]>([]);
-  const [selectedActivity,setSelectedActivity] = useState<Activity | undefined>(undefined);
-  const [editMode,setEditMode] = useState(Boolean);
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
+
+  const {activityStore} = useStore();
+  //const [activities,setActivities] = useState<Activity[]>([]);
+  //const [loading, setLoading] = useState(true);
+  //const [submitting, setSubmitting] = useState(false);
   
   useEffect(() => {
-      agent.Activities.list().then(response => {
-          let activities: Activity[] = [];
-          response.forEach(activity => {
-              activity.date = activity.date.split('T')[0];
-              activities.push(activity);
-          })
+      activityStore.loadActivities();
+  },[activityStore])
 
-        //console.log(response);
-        setActivities(activities);
-        setLoading(false);
-    })
-  },[])
-
-  function handleSelectActivity(id: string){
-    setSelectedActivity(activities.find(x => x.id === id));
+ /*  function handleSelectActivity(id: string){
+    setSelectedActivity(activityStore.activities.find(x => x.id === id));
   }
 
   function handleCancelSelectActivity(){
@@ -45,9 +34,9 @@ function App() {
 
   function handleFormClose() {
       setEditMode(false);
-  }
+  } */
 
-  function handleCreateOrEditActivity(activity: Activity){
+ /*  function handleCreateOrEditActivity(activity: Activity){
     setSubmitting(true);
 
     if (activity.id) {
@@ -69,35 +58,24 @@ function App() {
 
     }
 
-  }
+  } */
 
-  function handleDeleteActivity(id: string) {
-    setSubmitting(true);
-    agent.Activities.delete(id).then( () => {
-      setActivities([...activities.filter(x => x.id != id)]);
-      setSubmitting(false);
-    })
-    
-  }
+ 
 
- if (loading) return <LoadingComponent content='Loading App....' />
+ if (activityStore.loadingInitial) return <LoadingComponent content='Loading App....' />
 
   return (
     <>
-      <NavBar openForm={handleFormOpen} />
-
+      <NavBar />
       <Container style={{ marginTop: "7em"  }}>
          <ActivityDashboard 
-            activities={activities} 
-            selectedActivity = {selectedActivity}
-            selectActivity = {handleSelectActivity}
+            /*activities={activityStore.activities} 
+             selectActivity = {handleSelectActivity}
             cancelSelectActivity = {handleCancelSelectActivity}
-            editMode = {editMode}
             openForm = {handleFormOpen}
-            closeForm = {handleFormClose}
-            createOrEdit = {handleCreateOrEditActivity}
+            closeForm = {handleFormClose} 
             deleteActivity = {handleDeleteActivity}
-            submitting = {submitting}
+            submitting = {submitting} */
          />
       </Container>
 
@@ -106,4 +84,4 @@ function App() {
   )
 }
 
-export default App
+export default observer(App);
